@@ -52,30 +52,38 @@ for i in range(1, 501):
 print(len(list_review_url))
 # print(movie_titles[:5])
 print(len(movie_titles))
-driver.close()
+
 
 review_title_xpath = ''
 reviews = []
-for url in list_review_url:
-    driver = webdriver.Chrome(service=service, options=options)
-    driver.get(url)
-    time.sleep(1)
-    review = ''
-    for k in range(1, 11):
-        review_title_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/a[1]/div'.format(k)
-        review_more_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/div/button'.format(k)
-        try:
-            review_more = driver.find_element(By.XPATH, review_more_xpath)
-            driver.execute_script('arguments[0].click();', review_more)
-            time.sleep(1)
-            review_detail_xpath = '//*[@id="contents"]/div[2]/div[1]/div/section[2]/div/div'
-            review = review + ' ' + driver.find_element(By.XPATH, review_detail_xpath).text
-            driver.back()
-            time.sleep(1)
-        except:
-            review = review + ' ' + driver.find_element(By.XPATH, review_title_xpath).text
 
-    reviews.append(review)
+for url in list_review_url:
+    driver.get(url)
+    time.sleep(2)
+    review = ''
+    driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
+    time.sleep(2)
+    driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
+    time.sleep(2)
+    try:
+        for k in range(1, 31):
+            review_title_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/a[1]/div'.format(k)
+            review_more_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/div/button'.format(k)
+            try:
+                review_more = driver.find_element(By.XPATH, review_more_xpath)
+                driver.execute_script('arguments[0].click();', review_more)
+                time.sleep(1)
+                review_detail_xpath = '//*[@id="contents"]/div[2]/div[1]/div/section[2]/div/div'
+                review = review + ' ' + driver.find_element(By.XPATH, review_detail_xpath).text
+                driver.back()
+                time.sleep(1)
+            except:
+                review = review + ' ' + driver.find_element(By.XPATH, review_title_xpath).text
+                time.sleep(0.5)
+        reviews.append(review)
+    except:
+        print('review error')
+
 
 print(len(reviews))
 
