@@ -36,14 +36,14 @@ button_ok = driver.find_element(By.XPATH, button_ok_xpath)
 driver.execute_script('arguments[0].click();', button_ok)
 time.sleep(1)
 
-for j in range(12):
+for j in range(3):
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
     time.sleep(1)
 time.sleep(1)
 list_review_url = []
 movie_titles = []
 
-for i in range(1, 501):
+for i in range(1, 51):
     base = driver.find_element(By.XPATH, f'//*[@id="contents"]/div/div/div[3]/div[2]/div[{i}]/a').get_attribute("href")
     list_review_url.append(f"{base}/reviews")
     title = driver.find_element(By.XPATH, f'//*[@id="contents"]/div/div/div[3]/div[2]/div[{i}]/div/div[1]').text
@@ -53,40 +53,50 @@ print(len(list_review_url))
 # print(movie_titles[:5])
 print(len(movie_titles))
 
-
-review_title_xpath = ''
+# error_count = 0
 reviews = []
 
-for url in list_review_url:
+for idx, url in enumerate(list_review_url[0:51]):
     driver.get(url)
-    time.sleep(2)
+    time.sleep(0.5)
     review = ''
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
-    time.sleep(2)
+    time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
-    time.sleep(2)
-    try:
-        for k in range(1, 31):
-            review_title_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/a[1]/div'.format(k)
-            review_more_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/div/button'.format(k)
+    time.sleep(1)
+    for k in range(1, 31):
+        review_title_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/a[1]/div'.format(k)
+        review_more_xpath = '//*[@id="contents"]/div[2]/div[2]/div[{}]/div/div[3]/div/button'.format(k)
+        try:
+            review_more = driver.find_element(By.XPATH, review_more_xpath)
+            driver.execute_script('arguments[0].click();', review_more)
+            time.sleep(1)
+            review_detail_xpath = '//*[@id="contents"]/div[2]/div[1]/div/section[2]/div/div'
+            review = review + ' ' + driver.find_element(By.XPATH, review_detail_xpath).text
+            driver.back()
+            time.sleep(1)
+        except NoSuchElementException as e:
+            # print('더보기', e)
             try:
-                review_more = driver.find_element(By.XPATH, review_more_xpath)
-                driver.execute_script('arguments[0].click();', review_more)
-                time.sleep(1)
-                review_detail_xpath = '//*[@id="contents"]/div[2]/div[1]/div/section[2]/div/div'
-                review = review + ' ' + driver.find_element(By.XPATH, review_detail_xpath).text
-                driver.back()
+                review = review + ' ' + driver.find_element(By.XPATH, review_title_xpath).text
                 time.sleep(1)
             except:
-                review = review + ' ' + driver.find_element(By.XPATH, review_title_xpath).text
-                time.sleep(0.5)
-        reviews.append(review)
-    except:
-        print('review error')
+                print('review title error', url)
+        except StaleElementReferenceException as e:
+            print('stale', e)
+            time.sleep(1)
+        except:
+            print('error', url)
 
+    reviews.append(review)
+    if idx % 10 == 0:
+        print(idx)
 
 print(len(reviews))
 
+df = pd.DataFrame({'titles':movie_titles[0:51], 'reviews':reviews})
+# today = datetime.datetime.now().strftime('%Y%m%d')
+df.to_csv('./crawling_data/reviews_50.csv', index=False)
 
 
 
